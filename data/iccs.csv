@@ -1,0 +1,22 @@
+iccs,crime_info
+ICCS0101,Intentional homicide
+ICCS0102,Attempted intentional homicide
+ICCS020111,Serious assault
+ICCS020221,Kidnapping
+ICCS0301,Sexual violence
+ICCS03011,Rape
+ICCS03012,Sexual assault
+ICCS0302,Sexual exploitation
+ICCS030221,Child pornography
+ICCS0401,Robbery
+ICCS0501,Burglary
+ICCS05012,Burglary of private residential premises
+ICCS0502,Theft
+ICCS05021,Theft of a motorized vehicle or parts thereof
+ICCS0601,Unlawful acts involving controlled drugs or precursors
+ICCS0701,Fraud
+ICCS0703,Corruption
+ICCS07031,Bribery
+ICCS07041,Money laundering
+ICCS0903,Acts against computer systems
+ICCS09051,Participation in an organized criminal group
