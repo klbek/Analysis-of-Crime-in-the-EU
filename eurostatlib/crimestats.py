@@ -89,50 +89,46 @@ class Statistics:
 
             
 
-    def _calculate_from_data(self, data, code):
-        if code != '1-1': # prozatimni ponechani, aby si clovek mohl filtroval tabulku, jak potrebuje
-            self.missing_values_info = f'No statistics for this filtered data.'
+    def _calculate_from_data(self, data):
+        value_column = data['value']
+        year_column = data['year']
 
+        self.count_years = year_column.count()
+        self.count_fill_values = value_column.count()
+
+            # TODO: nutno pořešit v rámci změny filtrování, např. pokud budu mít všechny země, tento údaj úplně nědává smysl, 
+        self.min_range_year = year_column.min() 
+        self.max_range_year = year_column.max()
+
+        if value_column.count() > 1:
+            idx_first_fill_year = value_column.first_valid_index()
+            self.first_fill_year = year_column[idx_first_fill_year]
+
+            idx_last_fill_year = value_column.last_valid_index()
+            self.last_fill_year = year_column[idx_last_fill_year]
+            
+            self.mean_value = round(value_column.mean(), 2)
+            self.median_value = value_column.median()
+
+            max_value_row = data.loc[data['value'].idxmax()]
+            min_value_row = data.loc[data['value'].idxmin()]
+
+            self.max_value, self.max_value_year = max_value_row[['value', 'year']]
+            self.min_value, self.min_value_year = min_value_row[['value', 'year']]
+
+            # ddof=1 ->nastavení na výběrovou směrodatnou odchylku, bez toho populační směrodatná odchylka
+            self.standard_deviation = round(numpy.std(value_column, ddof=1), 2)
+            
+            self._detect_missing_values(data, idx_first_fill_year, idx_last_fill_year)
+            self.get_statistics_dict_info()
+
+        elif value_column.count() == 1:
+            idx_first_fill_year = value_column.first_valid_index()
+            self.min_value = data.loc[idx_first_fill_year, 'value']
+            self.min_value_year = data.loc[idx_first_fill_year, 'year']
+            self._detect_missing_values(data)
+            self.get_statistics_dict_info()
+            
         else:
-            value_column = data['value']
-            year_column = data['year']
-
-            self.count_years = year_column.count()
-            self.count_fill_values = value_column.count()
-
-             # TODO: nutno pořešit v rámci změny filtrování, např. pokud budu mít všechny země, tento údaj úplně nědává smysl, 
-            self.min_range_year = year_column.min() 
-            self.max_range_year = year_column.max()
-
-            if value_column.count() > 1:
-                idx_first_fill_year = value_column.first_valid_index()
-                self.first_fill_year = year_column[idx_first_fill_year]
-
-                idx_last_fill_year = value_column.last_valid_index()
-                self.last_fill_year = year_column[idx_last_fill_year]
-               
-                self.mean_value = round(value_column.mean(), 2)
-                self.median_value = value_column.median()
-
-                max_value_row = data.loc[data['value'].idxmax()]
-                min_value_row = data.loc[data['value'].idxmin()]
-
-                self.max_value, self.max_value_year = max_value_row[['value', 'year']]
-                self.min_value, self.min_value_year = min_value_row[['value', 'year']]
-
-                # ddof=1 ->nastavení na výběrovou směrodatnou odchylku, bez toho populační směrodatná odchylka
-                self.standard_deviation = round(numpy.std(value_column, ddof=1), 2)
-                
-                self._detect_missing_values(data, idx_first_fill_year, idx_last_fill_year)
-                self.get_statistics_dict_info()
-
-            elif value_column.count() == 1:
-                idx_first_fill_year = value_column.first_valid_index()
-                self.min_value = data.loc[idx_first_fill_year, 'value']
-                self.min_value_year = data.loc[idx_first_fill_year, 'year']
-                self._detect_missing_values(data)
-                self.get_statistics_dict_info()
-                
-            else:
-                self._detect_missing_values(data)
-                self.get_statistics_dict_info()
+            self._detect_missing_values(data)
+            self.get_statistics_dict_info()

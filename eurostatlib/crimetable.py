@@ -11,7 +11,6 @@ class EurostatCrimeTable:
     country: str = None
     crime: str = None
     filtered_data: pd.DataFrame = None
-    filtered_code: None = None
     statistics: Statistics = None
     statistics_info: str = None 
     
@@ -71,12 +70,9 @@ class EurostatCrimeTable:
 
     def _calculate_statistics(self):
         data = self.filtered_data
-        code = self.filtered_code
 
         stat = Statistics()
-        stat._calculate_from_data(data, code)
-        # TODO zaktivnit calc_func
-        # self.calc_func(data, code)
+        stat._calculate_from_data(data)
         self.statistics = stat
 
         # overeni vyplnebych hodnot - existence range
@@ -108,31 +104,14 @@ class EurostatCrimeTable:
         self.country = country
         self.crime = crime
    
-
-        # TODO: nahradit kody '1-1' novymi tridami, ktere budou dedit od Statistics()
-        if country != 'all' and crime != 'all':
-            filtered_data = self.data[(self.data['country_name'] == country) & (
+        filtered_data = self.data[(self.data['country_name'] == country) & (
                 self.data['crime_info'] == crime)]
-            filtered_data = filtered_data.sort_values(
+        filtered_data = filtered_data.sort_values(
                 by='year', axis=0, ascending=True)
             
-            # vznik noveho sloupce index!!
-            self.filtered_data = filtered_data.reset_index()
-            self.filtered_code = '1-1'
+        # vznik noveho sloupce index!!
+        self.filtered_data = filtered_data.reset_index()
             
-
-        elif country != 'all' and crime == 'all':
-            self.filtered_data = self.data[self.data['country_name'] == country]
-            self.filtered_code = '1-all'
-
-        elif country == 'all' and crime != 'all':
-            self.filtered_data = self.data[self.data['crime_info'] == crime]
-            self.filtered_code = 'all-1'
-
-        elif country == 'all' and crime == 'all':
-            self.filtered_data = self.data
-            self.filtered_code = 'all-all'
-
         self._calculate_statistics()
 
     def create_summary_df_1all(self):
