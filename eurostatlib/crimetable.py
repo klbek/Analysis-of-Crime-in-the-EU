@@ -18,11 +18,9 @@ class EurostatCrimeTable:
 
     def _get_sorted_list(self, unpivot_data):
         country_list_sorted = sorted(unpivot_data['country_name'].unique())
-        country_list_sorted.insert(0, 'all')
         self.country_list_sorted = country_list_sorted
 
         crime_list_sorted = sorted(unpivot_data['crime_info'].unique())
-        crime_list_sorted.insert(0, 'all')
         self.crime_list_sorted = crime_list_sorted
 
         # TODO filtrace crime dle toho, jestli ma dana zeme u crime alespon 1 vyplnenou hodnotu
