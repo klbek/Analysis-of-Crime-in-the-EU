@@ -108,27 +108,27 @@ class EurostatCrimeTable:
         self._calculate_statistics()
 
         crime_categories = {
-            "Intentional homicide": "Visible",
-            "Attempted intentional homicide": "Visible",
-            "Serious assault": "Visible",
-            "Kidnapping": "Visible",
-            "Sexual violence": "Sensitive",
-            "Rape": "Sensitive",
-            "Sexual assault": "Sensitive",
-            "Sexual exploitation": "Sensitive",
-            "Child pornography": "Sensitive",
-            "Robbery": "Visible",
-            "Burglary": "Visible",
-            "Burglary of private residential premises": "Visible",
-            "Theft": "Visible",
-            "Theft of a motorized vehicle or parts thereof": "Visible",
-            "Unlawful acts involving controlled drugs or precursors": "Hidden",
-            "Fraud": "Hidden",
-            "Corruption": "Hidden",
-            "Bribery": "Hidden",
-            "Money laundering": "Hidden",
-            "Acts against computer systems": "Hidden",
-            "Participation in an organized criminal group": "Hidden"
+            "Intentional homicide": "visible",
+            "Attempted intentional homicide": "visible",
+            "Serious assault": "visible",
+            "Kidnapping": "visible",
+            "Sexual violence": "sensitive",
+            "Rape": "sensitive",
+            "Sexual assault": "sensitive",
+            "Sexual exploitation": "sensitive",
+            "Child pornography": "sensitive",
+            "Robbery": "visible",
+            "Burglary": "visible",
+            "Burglary of private residential premises": "visible",
+            "Theft": "visible",
+            "Theft of a motorized vehicle or parts thereof": "visible",
+            "Unlawful acts involving controlled drugs or precursors": "hidden",
+            "Fraud": "hidden",
+            "Corruption": "hidden",
+            "Bribery": "hidden",
+            "Money laundering": "hidden",
+            "Acts against computer systems": "hidden",
+            "Participation in an organized criminal group": "hidden"
         }
         self.crime_category = crime_categories.get(crime, 'category not found')
 
