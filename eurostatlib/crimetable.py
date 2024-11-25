@@ -34,8 +34,8 @@ class EurostatCrimeTable:
         count_split_columns = len(split_name_columns)
         data[split_name_columns] = data[data.columns[0]
                                         ].str.split(',', expand=True)
-        # odstraneni jiz rozdeleneho sloupce
-        data = data.drop(data.columns[0], axis="columns")
+      
+        data = data.drop(data.columns[0], axis="columns") # odstraneni jiz rozdeleneho sloupce
 
         data = data.merge(geo_df, how='left', on='geo')
         data = data.merge(iccs_df, how='left', on='iccs')
@@ -76,7 +76,7 @@ class EurostatCrimeTable:
         stat._calculate_from_data(data)
         self.statistics = stat
 
-        # overeni vyplnebych hodnot - existence range
+        # overeni vyplnenych hodnot - existence range
         if pd.notna(stat.last_fill_year) and pd.notna(stat.max_range_year):
             if stat.last_fill_year != stat.max_range_year:
                 info = f'Data disclosure by the country began in {
@@ -94,12 +94,6 @@ class EurostatCrimeTable:
             self.statistics_info = f'During a {stat.count_years}-year period, {self.country} recorded {stat.count_fill_values} entries for {self.crime} types of crime. {info} Across these years, there were an average of {
                 stat.mean_value} crimes per hundred thousand inhabitants each year and standard deviation was {stat.standard_deviation}. The minimum recorded crime rate per hundred thousand inhabitants was {stat.min_value} in {stat.min_value_year}, while the maximum was {stat.max_value} in {stat.max_value_year}.'
 
-        # TODO: vyřešit info o státu/kriminalitě
-        # TODO:
-        # přidat dodatečné  informace o směrodané odchylce
-        # přidat info o násobku z min -> max aj
-        # od jakého roku začal stát poskytovat/sbírat data - zmenit automaticky range ve widgete
-        # vytvorit slovnik jako zaznamnik pro porovnani s ostatnimi zememi průmery, max, min v ráci tr. činnu
 
     def filter_data(self, country, crime):
         self.country = country
