@@ -3,6 +3,7 @@ import numpy
 from dataclasses import dataclass
 from eurostatlib.crimestats import Statistics
 
+
 @dataclass
 class EurostatCrimeTable:
     data: pd.DataFrame = None
@@ -13,8 +14,7 @@ class EurostatCrimeTable:
     crime_category: str = None
     filtered_data: pd.DataFrame = None
     statistics: Statistics = None
-    statistics_info: str = None 
-    
+    statistics_info: str = None
 
     def _get_sorted_list(self, unpivot_data):
         country_list_sorted = sorted(unpivot_data['country_name'].unique())
@@ -61,7 +61,7 @@ class EurostatCrimeTable:
 
         unpivot_data = pd.melt(
             data, id_vars=info_list, value_vars=years_list, var_name='year', value_name='value')
-      
+
         unpivot_data['year'] = unpivot_data['year'].astype('int')
         unpivot_data['value'] = unpivot_data['value'].replace(
             [': ', '0 ', '0.00 ', 0], numpy.nan).astype('float')
@@ -104,49 +104,48 @@ class EurostatCrimeTable:
     def filter_data(self, country, crime):
         self.country = country
         self.crime = crime
-   
+
         filtered_data = self.data[(self.data['country_name'] == country) & (
-                self.data['crime_info'] == crime)]
+            self.data['crime_info'] == crime)]
         filtered_data = filtered_data.sort_values(
-                by='year', axis=0, ascending=True)
-        
-        self.filtered_data = filtered_data.reset_index() # vznik noveho sloupce index!!   
+            by='year', axis=0, ascending=True)
+
+        self.filtered_data = filtered_data.reset_index()  # vznik noveho sloupce index!!
         self._calculate_statistics()
 
         crime_categories = {
-        "Intentional homicide": "Visible",
-        "Attempted intentional homicide": "Visible",
-        "Serious assault": "Visible",
-        "Kidnapping": "Visible",
-        "Sexual violence": "Sensitive",
-        "Rape": "Sensitive",
-        "Sexual assault": "Sensitive",
-        "Sexual exploitation": "Sensitive",
-        "Child pornography": "Sensitive",
-        "Robbery": "Visible",
-        "Burglary": "Visible",
-        "Burglary of private residential premises": "Visible",
-        "Theft": "Visible",
-        "Theft of a motorized vehicle or parts thereof": "Visible",
-        "Unlawful acts involving controlled drugs or precursors": "Hidden",
-        "Fraud": "Hidden",
-        "Corruption": "Hidden",
-        "Bribery": "Hidden",
-        "Money laundering": "Hidden",
-        "Acts against computer systems": "Hidden",
-        "Participation in an organized criminal group": "Hidden"
+            "Intentional homicide": "Visible",
+            "Attempted intentional homicide": "Visible",
+            "Serious assault": "Visible",
+            "Kidnapping": "Visible",
+            "Sexual violence": "Sensitive",
+            "Rape": "Sensitive",
+            "Sexual assault": "Sensitive",
+            "Sexual exploitation": "Sensitive",
+            "Child pornography": "Sensitive",
+            "Robbery": "Visible",
+            "Burglary": "Visible",
+            "Burglary of private residential premises": "Visible",
+            "Theft": "Visible",
+            "Theft of a motorized vehicle or parts thereof": "Visible",
+            "Unlawful acts involving controlled drugs or precursors": "Hidden",
+            "Fraud": "Hidden",
+            "Corruption": "Hidden",
+            "Bribery": "Hidden",
+            "Money laundering": "Hidden",
+            "Acts against computer systems": "Hidden",
+            "Participation in an organized criminal group": "Hidden"
         }
-        self.crime_category = crime_categories.get(crime,'category not found')
-
+        self.crime_category = crime_categories.get(crime, 'category not found')
 
     def create_summary_df_1all(self):
         dictionary_list = list()
 
-        for country_name in self.country_list_sorted[1:]:
-            for crime_name in self.crime_list_sorted[1:]:
+        for country_name in self.country_list_sorted:
+            for crime_name in self.crime_list_sorted:
                 country_crime_dict = {
                     'country': country_name, 'crime': crime_name, 'crime_category': self.crime_category}
-                
+
                 self.filter_data(country_name, crime_name)
                 self._calculate_statistics()
                 output_dictionary = self.statistics.statistics_dictionary
@@ -158,5 +157,3 @@ class EurostatCrimeTable:
 
     def __str__(self):
         print(f'info {self.statistics}')
-
-    
