@@ -10,6 +10,7 @@ class EurostatCrimeTable:
     crime_list_sorted: list = None
     country: str = None
     crime: str = None
+    crime_category: str = None
     filtered_data: pd.DataFrame = None
     statistics: Statistics = None
     statistics_info: str = None 
@@ -43,8 +44,8 @@ class EurostatCrimeTable:
 
         # presun rozdelenych a naparovaných udaju  na zacatek df
         reorg_columns = data.columns.tolist()
-        final_reorg_columns = reorg_columns[-(count_split_columns + 1):] + \
-            reorg_columns[:-(count_split_columns + 1)]
+        final_reorg_columns = reorg_columns[-(count_split_columns):] + \
+            reorg_columns[:-(count_split_columns)]
         data = data[final_reorg_columns]
 
         # podminka, ze se nejedna o rocni data
@@ -55,8 +56,8 @@ class EurostatCrimeTable:
         no_p_hthab = data[data['unit'] != 'P_HTHAB'].index
         data = data.drop(index=no_p_hthab)
 
-        years_list = data.columns[(count_split_columns + 1):]
-        info_list = data.columns[:(count_split_columns + 1)]
+        years_list = data.columns[(count_split_columns):]
+        info_list = data.columns[:(count_split_columns)]
 
         unpivot_data = pd.melt(
             data, id_vars=info_list, value_vars=years_list, var_name='year', value_name='value')
@@ -108,11 +109,35 @@ class EurostatCrimeTable:
                 self.data['crime_info'] == crime)]
         filtered_data = filtered_data.sort_values(
                 by='year', axis=0, ascending=True)
-            
-        # vznik noveho sloupce index!!
-        self.filtered_data = filtered_data.reset_index()
-            
+        
+        self.filtered_data = filtered_data.reset_index() # vznik noveho sloupce index!!   
         self._calculate_statistics()
+
+        crime_categories = {
+        "Intentional homicide": "Visible",
+        "Attempted intentional homicide": "Visible",
+        "Serious assault": "Visible",
+        "Kidnapping": "Visible",
+        "Sexual violence": "Sensitive",
+        "Rape": "Sensitive",
+        "Sexual assault": "Sensitive",
+        "Sexual exploitation": "Sensitive",
+        "Child pornography": "Sensitive",
+        "Robbery": "Visible",
+        "Burglary": "Visible",
+        "Burglary of private residential premises": "Visible",
+        "Theft": "Visible",
+        "Theft of a motorized vehicle or parts thereof": "Visible",
+        "Unlawful acts involving controlled drugs or precursors": "Hidden",
+        "Fraud": "Hidden",
+        "Corruption": "Hidden",
+        "Bribery": "Hidden",
+        "Money laundering": "Hidden",
+        "Acts against computer systems": "Hidden",
+        "Participation in an organized criminal group": "Hidden"
+        }
+        self.crime_category = crime_categories.get(crime,'category not found')
+
 
     def create_summary_df_1all(self):
         dictionary_list = list()
@@ -120,7 +145,8 @@ class EurostatCrimeTable:
         for country_name in self.country_list_sorted[1:]:
             for crime_name in self.crime_list_sorted[1:]:
                 country_crime_dict = {
-                    'country': country_name, 'crime': crime_name}
+                    'country': country_name, 'crime': crime_name, 'crime_category': self.crime_category}
+                
                 self.filter_data(country_name, crime_name)
                 self._calculate_statistics()
                 output_dictionary = self.statistics.statistics_dictionary
@@ -128,32 +154,6 @@ class EurostatCrimeTable:
                 dictionary_list.append(country_crime_dict)
         country_crime_info_11 = pd.DataFrame.from_dict(dictionary_list)
 
-        crime_categories = {
-            "Intentional homicide": "Visible",
-            "Attempted intentional homicide": "Visible",
-            "Serious assault": "Visible",
-            "Kidnapping": "Visible",
-            "Sexual violence": "Sensitive",
-            "Rape": "Sensitive",
-            "Sexual assault": "Sensitive",
-            "Sexual exploitation": "Sensitive",
-            "Child pornography": "Sensitive",
-            "Robbery": "Visible",
-            "Burglary": "Visible",
-            "Burglary of private residential premises": "Visible",
-            "Theft": "Visible",
-            "Theft of a motorized vehicle or parts thereof": "Visible",
-            "Unlawful acts involving controlled drugs or precursors": "Hidden",
-            "Fraud": "Hidden",
-            "Corruption": "Hidden",
-            "Bribery": "Hidden",
-            "Money laundering": "Hidden",
-            "Acts against computer systems": "Hidden",
-            "Participation in an organized criminal group": "Hidden"
-        }
-
-        country_crime_info_11["category_crime"] = country_crime_info_11["crime"].map(
-            crime_categories)
         return country_crime_info_11
 
     def __str__(self):
