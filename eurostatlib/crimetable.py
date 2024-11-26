@@ -90,7 +90,48 @@ class EurostatCrimeTable:
         if stat.count_fill_values in [0, 1]:
             self.statistics_info = f'During a {stat.count_years}-year period, {self.country} recorded {
                 stat.count_fill_values} entries for {self.crime} types of crime. {info}'
+            
         elif stat.count_fill_values not in [0, 1]:
+            trend = self.statistics.statistics_dictionary['trend']
+            category = self.crime_category
+            trend_stregth = self.statistics.statistics_dictionary['relative_trend_strength']
+            std_dev = self.statistics.statistics_dictionary['standard_deviation']
+            mean = self.statistics.statistics_dictionary['mean_value']
+            
+            # Interpret the trend
+            if trend == 'increasing':
+                info_trend = 'This crime exhibits an increasing trend, suggesting that its occurrence is on the rise.'
+            elif trend == 'decreasing':
+                info_trend('This crime exhibits a decreasing trend, indicating that its occurrence is declining.')
+            else:
+                info_trend = 'This crime does not show a clear trend; the values are relatively stable over the years.'
+
+            # Evaluate the trend strengthh
+            if trend_stregth >= 0.8:
+                info_trend_strength = 'The trend is very strong, with most years aligning to this pattern.'
+            elif 0.5 < trend_stregth['relative_trend_strength'] < 0.8:
+                info_trend_strength = 'The trend is moderately strong, but there are some years deviating from it.'
+            else:
+                info_trend_strength = "The trend is weak or inconsistent, indicating significant fluctuations across the years."
+            
+            # Consider the crime category
+            if category == 'visible':
+                category_info = 'As this crime falls into the "visible" category, the measured values likely reflect actual changes in occurrence.'
+            elif category == 'sensitive':
+                category_info = 'Since this crime falls into the "sensitive" category, an increasing trend may reflect improved reporting of these crimes.'
+            elif category == 'hidden':
+                category_info = 'This crime is classified as "hidden", indicating high uncertainty in the data. Many of these crimes may go undetected.'
+
+            # Assess data variability
+            if std_dev / mean > 0.5:
+             variability_info = 'The values show high variability, which may be due to exceptional events in certain years.'
+            elif std_dev / mean > 0.2:
+                 variability_info = 'The data exhibits moderate variability, with occasional deviations from the average.'
+            else:
+                 variability_info = 'The values are highly consistent, with low variability.'
+
+            
+
             self.statistics_info = f'During a {stat.count_years}-year period, {self.country} recorded {stat.count_fill_values} entries for {self.crime} types of crime. {info} Across these years, there were an average of {
                 stat.mean_value} crimes per hundred thousand inhabitants each year and standard deviation was {stat.standard_deviation}. The minimum recorded crime rate per hundred thousand inhabitants was {stat.min_value} in {stat.min_value_year}, while the maximum was {stat.max_value} in {stat.max_value_year}.'
 
