@@ -15,6 +15,7 @@ class EurostatCrimeTable:
     filtered_data: pd.DataFrame = None
     statistics: Statistics = None
     statistics_info: str = None
+    country_crime_info_11: pd.DataFrame = None
 
     def _get_sorted_list(self, unpivot_data):
         country_list_sorted = sorted(unpivot_data['country_name'].unique())
@@ -220,7 +221,7 @@ class EurostatCrimeTable:
                 dictionary_list.append(country_crime_dict)
         country_crime_info_11 = pd.DataFrame.from_dict(dictionary_list)
 
-        return country_crime_info_11
+        self.country_crime_info_11 = country_crime_info_11
 
     def __str__(self):
         print(f'info {self.statistics}')
