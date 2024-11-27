@@ -141,14 +141,29 @@ class EurostatCrimeTable:
             else:
                  variability_info = 'The values are highly consistent, with low variability. '
 
-            # Unfill/missong values
+            # Unfill/missing values
             if unfill_values > 0:
                 relative_unfill = round((unfill_values / (unfill_values + fill_values)) * 100, 2)
                 unfill_info = f'During the observed period, {relative_unfill}% of the values were missing. This proportion of unfilled data may introduce biases into the results, warranting further investigation into the causes of these gaps. '
             else: 
-                unfill_info = f'During the observed period, there were no missing values. '            
+                unfill_info = f'During the observed period, there were no missing values. '
+            
+            # subcategory info
+            if category in ['Rape', 'Sexual assault']:
+                subcategory = 'A criminal offense is a subcategory of the offense "Sexual violence"'
+            elif category == 'Child pornography':
+                subcategory = 'A criminal offense is a subcategory of the offense "Sexual exploitation"'
+            elif category == 'Burglary of private residential premises':
+                subcategory = 'A criminal offense is a subcategory of the offense "Burglary"'
+            elif category == 'Theft of a motorized vehicle or parts thereof':
+                subcategory = 'A criminal offense is a subcategory of the offense "Theft"'
+            elif category == 'Bribery':
+                subcategory = 'A criminal offense is a subcategory of the offense "Corruption"'
+            else:
+                subcategory = ''
 
-            self.statistics_info = info + info_trend + info_trend_strength + category_info + variability_info + unfill_info
+
+            self.statistics_info = info + info_trend + info_trend_strength + category_info + variability_info + unfill_info + subcategory
 
 
     def filter_data(self, country, crime):
