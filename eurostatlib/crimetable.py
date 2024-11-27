@@ -35,8 +35,9 @@ class EurostatCrimeTable:
         count_split_columns = len(split_name_columns)
         data[split_name_columns] = data[data.columns[0]
                                         ].str.split(',', expand=True)
-      
-        data = data.drop(data.columns[0], axis='columns') # odstraneni jiz rozdeleneho sloupce
+
+        # odstraneni jiz rozdeleneho sloupce
+        data = data.drop(data.columns[0], axis='columns')
 
         data = data.merge(geo_df, how='left', on='geo')
         data = data.merge(iccs_df, how='left', on='iccs')
@@ -70,25 +71,25 @@ class EurostatCrimeTable:
         self._get_sorted_list(unpivot_data)
         self.data = unpivot_data
 
-
     def _calculate_statistics(self):
         data = self.filtered_data
 
         stat = Statistics()
         stat._calculate_from_data(data)
         self.statistics = stat
-        
-    
+
         # overeni vyplnenych hodnot - existence range
         if pd.notna(stat.last_fill_year) and pd.notna(stat.max_range_year):
-             info = f'Between {stat.first_fill_year} and {stat.last_fill_year}, {self.country} reported {stat.count_fill_values} recorded entries for {self.crime} covering a {stat.count_years}-year period. '          
-    
+            info = f'Between {stat.first_fill_year} and {stat.last_fill_year}, {self.country} reported {
+                stat.count_fill_values} recorded entries for {self.crime} covering a {stat.count_years}-year period. '
+
         else:
             info = 'Data disclosure information is incomplete or missing. '
 
         if stat.count_fill_values in [0, 1]:
-            self.statistics_info = f'During a {stat.count_years}-year period, {self.country} recorded {stat.count_fill_values} entries for {self.crime} types of crime. {info} '
-            
+            self.statistics_info = f'During a {stat.count_years}-year period, {self.country} recorded {
+                stat.count_fill_values} entries for {self.crime} types of crime. {info} '
+
         elif stat.count_fill_values not in [0, 1]:
             trend = self.statistics.statistics_dictionary['trend']
             category = self.crime_category
@@ -97,8 +98,9 @@ class EurostatCrimeTable:
             mean = self.statistics.statistics_dictionary['mean_value']
             unfill_values = self.statistics.statistics_dictionary['quality_range_unfill_data']
             fill_values = self.statistics.statistics_dictionary['quality_range_fill_data']
-            
-            # Interpret the trend              
+            crime = self.crime
+
+            # Trend info
             if pd.notna(trend):
                 if trend == 'increasing':
                     info_trend = 'This crime exhibits an increasing trend, suggesting that its occurrence is on the rise. '
@@ -108,9 +110,8 @@ class EurostatCrimeTable:
                     info_trend = 'The trend cannot be determined due to missing value(s). '
             else:
                 info_trend = 'The trend cannot be determined due to missing values. '
-       
 
-            # Evaluate the trend strengthh
+            # Trend strength info
             if pd.notna(trend):
                 if trend == 'to missing value(s)':
                     info_trend_strength = ''
@@ -122,9 +123,8 @@ class EurostatCrimeTable:
                     info_trend_strength = 'The trend is weak or inconsistent, with fluctuations that tend to cancel each other out over time. '
             else:
                 info_trend_strength = 'The trend strength cannot be determined due to missing values. '
-            
-            
-            # Consider the crime category
+
+            # Crime category info
             if category == 'visible':
                 category_info = 'As this crime falls into the "visible" category, an increasing trend likely reflects a genuine rise in occurrence, while a decrease may indicate an actual reduction in this type of crime. '
             elif category == 'sensitive':
@@ -134,38 +134,39 @@ class EurostatCrimeTable:
             else:
                 category_info = 'The crime category is missing or invalid. '
 
-            # Assess data variability
+            # Variabilita info
             if std_dev / mean > 0.5:
-             variability_info = 'The values show high variability, which may be due to exceptional events in certain years. '
+                variability_info = 'The values show high variability, which may be due to exceptional events in certain years. '
             elif std_dev / mean > 0.2:
-                 variability_info = 'The data exhibits variability, with occasional deviations from the average. '
+                variability_info = 'The data exhibits variability, with occasional deviations from the average. '
             else:
-                 variability_info = 'The values are highly consistent, with low variability. '
+                variability_info = 'The values are highly consistent, with low variability. '
 
             # Unfill/missing values
             if unfill_values > 0:
-                relative_unfill = round((unfill_values / (unfill_values + fill_values)) * 100, 2)
-                unfill_info = f'During the observed period, {relative_unfill}% of the values were missing. This proportion of unfilled data may introduce biases into the results, warranting further investigation into the causes of these gaps. '
-            else: 
+                relative_unfill = round(
+                    (unfill_values / (unfill_values + fill_values)) * 100, 2)
+                unfill_info = f'During the observed period, {
+                    relative_unfill}% of the values were missing. This proportion of unfilled data may introduce biases into the results, warranting further investigation into the causes of these gaps. '
+            else:
                 unfill_info = f'During the observed period, there were no missing values. '
-            
+
             # subcategory info
-            if category in ['Rape', 'Sexual assault']:
+            if crime in ['Rape', 'Sexual assault']:
                 subcategory = 'A criminal offense is a subcategory of the offense "Sexual violence"'
-            elif category == 'Child pornography':
+            elif crime == 'Child pornography':
                 subcategory = 'A criminal offense is a subcategory of the offense "Sexual exploitation"'
-            elif category == 'Burglary of private residential premises':
+            elif crime == 'Burglary of private residential premises':
                 subcategory = 'A criminal offense is a subcategory of the offense "Burglary"'
-            elif category == 'Theft of a motorized vehicle or parts thereof':
+            elif crime == 'Theft of a motorized vehicle or parts thereof':
                 subcategory = 'A criminal offense is a subcategory of the offense "Theft"'
-            elif category == 'Bribery':
+            elif crime == 'Bribery':
                 subcategory = 'A criminal offense is a subcategory of the offense "Corruption"'
             else:
                 subcategory = ''
 
-
-            self.statistics_info = info + info_trend + info_trend_strength + category_info + variability_info + unfill_info + subcategory
-
+            self.statistics_info = info + info_trend + info_trend_strength + \
+                category_info + variability_info + unfill_info + subcategory
 
     def filter_data(self, country, crime):
         self.country = country
@@ -177,7 +178,7 @@ class EurostatCrimeTable:
             by='year', axis=0, ascending=True)
 
         self.filtered_data = filtered_data.reset_index()  # vznik noveho sloupce index!!
-        
+
         crime_categories = {
             'Intentional homicide': 'visible',
             'Attempted intentional homicide': 'visible',
@@ -202,10 +203,8 @@ class EurostatCrimeTable:
             'Participation in an organized criminal group': 'hidden'
         }
         self.crime_category = crime_categories.get(crime, 'category not found')
-        
-        self._calculate_statistics()
 
-        
+        self._calculate_statistics()
 
     def create_summary_df_1all(self):
         dictionary_list = list()
