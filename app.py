@@ -12,11 +12,11 @@ iccs_df = pd.read_csv(r'data\iccs.csv')
 
 crime_table.load_data(f'data/estat_crim_off_cat.tsv', geo_df, iccs_df)
 crime_table.create_summary_df_1all()
+df_all = crime_table.country_crime_info_11
+df_all_visual_info = df_all[['country', 'crime', 'crime_category', 'count_years', 'quality_range_fill_data', 'quality_range_unfill_data', 'trend', 'relative_trend_strength']]
 
 
 
-df = pd.read_csv(r'dashboards\crime_data_df.csv')
-df2 = pd.read_csv(r'dashboards\test.csv')
 dfbar = pd.read_csv(
     'https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
 
@@ -61,13 +61,12 @@ app.layout = [
     html.Div([
         html.Div(children=[
             html.Label('Barchart'),
-            dcc.Graph(figure=px.histogram(dfbar, x='continent',
-                      y='lifeExp', histfunc='avg'), style={'flex': 1})
+            dcc.Graph(id='plot2')
         ], style={'width': '50%'}),
 
         html.Div(children=[
             html.Label('Table'),
-            dash_table.DataTable(data=df2.to_dict(
+            dash_table.DataTable(id='table1',data=df_all_visual_info.to_dict(
                 'records'), page_size=10, style_table={'overflowX': 'auto'}),
 
         ], style={'width': '50%'})
@@ -78,6 +77,8 @@ app.layout = [
 @app.callback(
     Output(component_id='plot1', component_property='figure'),
     Output(component_id='summarized-info', component_property='children'),
+    Output(component_id='plot2', component_property='figure'),
+    Output(component_id='table1', component_property='data'),
     [Input(component_id='dropdown-country', component_property='value'),
      Input(component_id='dropdown-crime', component_property='value')]
 )
@@ -87,7 +88,7 @@ def update_graph(select_country, select_crime):
 
 
     # create plot figure
-    fig = px.line(crime_table.filtered_data, x='year', y='value')
+    time_series_plot = px.line(crime_table.filtered_data, x='year', y='value')
 
     graph_info_div = html.Div([
     html.H2("Graph information:"),
@@ -144,8 +145,22 @@ def update_graph(select_country, select_crime):
     ])
 ])
     
+    filtred_table = df_all_visual_info[df_all_visual_info['country'] == f'{crime_table.country}']
+    filtred_table = filtred_table.sort_values(by='crime_category')
+    # print(filtred_table)
     
-    return fig, graph_info_div
+    plot = px.bar(
+        crime_table.filtered_data,
+        x='year',
+        y='value',
+        title='Bar Chart for Time Series',
+        labels={'year': 'Year', 'value': 'Value'},
+        template='plotly_white'
+    )
+
+
+
+    return time_series_plot, graph_info_div, plot, filtred_table.to_dict('records')
 
 
 
