@@ -2,6 +2,7 @@ from dash import Dash, html, dcc, callback, Output, Input, dash_table
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 
 from eurostatlib.crimetable import EurostatCrimeTable
 
@@ -146,21 +147,69 @@ def update_graph(select_country, select_crime):
 ])
     
     filtred_table = df_all_visual_info[df_all_visual_info['country'] == f'{crime_table.country}']
-    filtred_table = filtred_table.sort_values(by='crime_category')
+    filtred_table_by_coutnry = filtred_table.sort_values(by='crime_category')
     # print(filtred_table)
     
-    plot = px.bar(
-        crime_table.filtered_data,
-        x='year',
-        y='value',
-        title='Bar Chart for Time Series',
-        labels={'year': 'Year', 'value': 'Value'},
-        template='plotly_white'
+    # plot = px.bar(
+    #     crime_table.filtered_data,
+    #     x='year',
+    #     y='value',
+    #     title='Bar Chart for Time Series',
+    #     labels={'year': 'Year', 'value': 'Value'},
+    #     template='plotly_white'
+    # )
+
+    plot = go.Figure(
+    data=[
+        go.Bar(
+            x=filtred_table['crime'],
+            y=filtred_table['quality_range_fill_data'] - filtred_table['quality_range_unfill_data'],
+            name='Count fill values',
+            marker_color='blue'
+        ),
+        go.Bar(
+            x=filtred_table['crime'],
+            y=filtred_table['quality_range_unfill_data'],
+            name='Count unfill values',
+            marker_color='orange'
+        ),
+        go.Scatter(
+            x=filtred_table['crime'],
+            y=[filtred_table['count_years'].max()] * len(filtred_table['crime']),
+            mode='lines',
+            name='Count year period',
+            line=dict(color='red', dash='dash')
+        )
+    ],
+    layout=go.Layout(
+        barmode='stack',
+        title=dict(
+            text=f"Crime Trends and Data Quality Indicators in {select_country}<br><span style='font-size:12px;color:gray;'>During Reporting Period</span>",
+            x=0.5,  # Center the title and subtitle
+        ),
+        xaxis=dict(
+            title='Crime',
+            tickvals=filtred_table['crime'],
+            ticktext=[x[:16] + '...' if len(x) > 16 else x for x in filtred_table['crime']],
+            tickangle=45  # Rotate the X-axis labels
+        ),
+        yaxis=dict(title='Value'),
+        template='plotly_white',
+        annotations=[
+            dict(
+                x=crime,
+                y=filtred_table.loc[filtred_table['crime'] == crime, 'quality_range_fill_data'].sum(),
+                text=(f"{trend[:3].lower().replace('to ', '')} {'⬈' if trend[:3].lower() == 'inc' else '⬊' if trend[:3].lower() == 'dec' else '-'}<br>" f"<span style='font-size:10px;color:gray;'>"f"{str(strength) if pd.notna(strength) else ''}</span>"),
+                showarrow=False,
+                font=dict(size=12, color="black"),
+                xanchor="center",
+                yanchor="bottom"
+            )
+            for crime, trend, strength in zip(filtred_table['crime'], filtred_table['trend'],filtred_table['relative_trend_strength'])
+        ]
     )
-
-
-
-    return time_series_plot, graph_info_div, plot, filtred_table.to_dict('records')
+)
+    return time_series_plot, graph_info_div, plot, filtred_table_by_coutnry.to_dict('records')
 
 
 
