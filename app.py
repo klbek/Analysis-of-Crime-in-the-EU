@@ -89,22 +89,84 @@ def update_graph(select_country, select_crime):
 
 
     # create plot figure
-    time_series_plot = px.line(
-        crime_table.filtered_data,
-        x='year',
-        y='value',
-        title=f'Time Series for {select_country} and crime: {select_crime}'
-    ).update_layout(
-        title_x=0.5,  # Vycentrování názvu
-        xaxis=dict(
-            tickmode='array',
-            tickvals=crime_table.filtered_data['year'].unique(),  # Všechny unikátní hodnoty roku
-            title='Year'
-        ),
-        yaxis=dict(
-            title='Value'
+    if crime_table.filtered_data['value'].notna().sum() == 0:
+    # Pokud nejsou hodnoty k dispozici, zobrazí se graf s informací o chybějících datech
+        time_series_plot = px.line(
+            title=f'Time Series for {select_country} and crime: {select_crime}'
+        ).add_annotation(
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            text="No data available for this crime type.",
+            showarrow=False,
+            font=dict(size=16, color="red"),
+            align="center"
+        ).update_layout(
+            xaxis=dict(
+                visible=False  # Skryje osu X
+            ),
+            yaxis=dict(
+                visible=False  # Skryje osu Y
+            )
         )
-    )
+    else:
+    # Pokud jsou hodnoty dostupné, vytvoří standardní graf
+        time_series_plot = px.line(
+            crime_table.filtered_data,
+            x='year',
+            y='value',
+            title=f'Time Series for {select_country} and crime: {select_crime}'
+        ).update_traces(
+            mode='lines+markers'  # Zobrazení čáry i bodů
+        ).add_shape(
+            type='line',
+            x0=crime_table.filtered_data['year'].min(),
+            x1=crime_table.filtered_data['year'].max(),
+            y0=crime_table.filtered_data['value'].mean(),
+            y1=crime_table.filtered_data['value'].mean(),
+            line=dict(color='red', dash='dash'),
+            xref='x',
+            yref='y'
+        ).add_annotation(
+            x=crime_table.filtered_data['year'].max() - 1.5,  # Začátek osy X
+            y=crime_table.filtered_data['value'].mean(),  # Průměrná hodnota na ose Y
+            text=f"Average: {crime_table.filtered_data['value'].mean():.2f}",  # Popisek
+            showarrow=False,
+            font=dict(size=12, color="red"),  # Styl textu
+            align="left",
+            xanchor="left",
+            yanchor="bottom"
+        ).add_shape(
+            type='rect',
+            x0=crime_table.filtered_data['year'].min(),
+            x1=crime_table.filtered_data['year'].max(),
+            y0=crime_table.filtered_data['value'].mean() - crime_table.filtered_data['value'].std(),
+            y1=crime_table.filtered_data['value'].mean() + crime_table.filtered_data['value'].std(),
+            fillcolor="rgba(0, 0, 255, 0.1)",
+            line_width=0,
+            layer="below"
+        ).add_annotation(
+            x=crime_table.filtered_data['year'].max() + 0.5,  # Na pravý okraj osy X
+            y=crime_table.filtered_data['value'].mean(),  # Na úroveň průměru
+            text="Standard Deviation Range",  # Popisek
+            textangle=90,
+            showarrow=False,
+            font=dict(size=12, color="blue"),  # Styl textu
+            align="right",
+            xanchor="right",
+            yanchor="middle"
+        ).update_layout(
+            title_x=0.5,  # Vycentrování názvu
+            xaxis=dict(
+                tickmode='array',
+                tickvals=crime_table.filtered_data['year'].unique(),  # Všechny unikátní hodnoty roku
+                title='Year'
+            ),
+            yaxis=dict(
+                title='Value',
+            )
+        )
 
 
     graph_info_div = html.Div([
