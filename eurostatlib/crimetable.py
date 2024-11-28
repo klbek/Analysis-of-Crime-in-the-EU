@@ -69,6 +69,10 @@ class EurostatCrimeTable:
             [': ', '0 ', '0.00 ', 0], numpy.nan).astype('float')
 
         self._get_sorted_list(unpivot_data)
+
+        #odstraneni zaznamu, protoze od roku 2019 oficialne tyto zeme/uzemni celky neposkytuji data
+        unpivot_data = unpivot_data[ ~((unpivot_data['year'] >= 2019) & (unpivot_data['country_name'].isin(['Scotland (NUTS 2021)', 'England and Wales', 'Northern Ireland (UK) (NUTS 2021)'])))]
+
         self.data = unpivot_data
 
     def _calculate_statistics(self):

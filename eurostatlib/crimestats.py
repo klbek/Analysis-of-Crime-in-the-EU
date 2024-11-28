@@ -22,7 +22,7 @@ class Statistics:
     trend: str = pd.NA
     relative_trend_strength: float = numpy.nan
     min_range_year: int = pd.NA
-    max_range_year: int = pd.NA  # otázka zda používat, je to informace pro range widget
+    max_range_year: int = pd.NA
     statistics_dictionary: dict = None
 
     def get_statistics_dict_info(self):
