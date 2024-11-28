@@ -90,9 +90,8 @@ def update_graph(select_country, select_crime):
 
     # create plot figure
     if crime_table.filtered_data['value'].notna().sum() == 0:
-    # Pokud nejsou hodnoty k dispozici, zobrazí se graf s informací o chybějících datech
         time_series_plot = px.line(
-            title=f'Time Series for {select_country} and crime: {select_crime}'
+            title=f'Time Series for {select_country} and crime: {select_crime}<br><span style="font-size:12px;color:gray;">Crime category: {crime_table.crime_category if pd.notna(crime_table.crime_category) else "Unknown"}'
         ).add_annotation(
             xref="paper",
             yref="paper",
@@ -103,6 +102,7 @@ def update_graph(select_country, select_crime):
             font=dict(size=16, color="red"),
             align="center"
         ).update_layout(
+            title_x=0.5,
             xaxis=dict(
                 visible=False  # Skryje osu X
             ),
@@ -116,7 +116,7 @@ def update_graph(select_country, select_crime):
             crime_table.filtered_data,
             x='year',
             y='value',
-            title=f'Time Series for {select_country} and crime: {select_crime}'
+            title=f'Time Series for {select_country} and crime: {select_crime}<br><span style="font-size:12px;color:gray;">Crime category: {crime_table.crime_category if pd.notna(crime_table.crime_category) else "Unknown"}'
         ).update_traces(
             mode='lines+markers'  # Zobrazení čáry i bodů
         ).add_shape(
