@@ -66,11 +66,47 @@ app.layout = [
         ], style={'width': '66%'}),
 
         html.Div(children=[
-            html.Label('Table'),
+            html.Label(f'Summary Trend Table excluding subcategory and no trend'),
             dash_table.DataTable(id='table1', page_size=10, style_table={'overflowX': 'auto'}),
 
         ], style={'width': '25%'})
-    ], style={'display': 'flex', 'flexDirection': 'row', 'gap': '20px'})]
+    ], style={'display': 'flex', 'flexDirection': 'row', 'gap': '20px'}),
+
+    html.Div([
+        html.Div(children=[
+            html.Label(f'Summary Trend Table including subcategory'),
+            dash_table.DataTable(id='table2', page_size=10, style_table={'overflowX': 'auto'},style_data_conditional=[
+                # Podmínka pro 'decreasing' a relative_trend_strength > 0.9
+                {
+                    'if': {
+                        'filter_query': '{trend} = "decreasing" && {relative_trend_strength} > 0.85',
+                        'column_id': 'relative_trend_strength'
+                    },
+                    'backgroundColor': 'rgba(144, 238, 144, 0.5)',  # Světle zelená barva
+                    'color': 'black'  # Barva textu
+                },
+                # Podmínka pro 'increasing' a relative_trend_strength > 0.9
+                {
+                    'if': {
+                        'filter_query': '{trend} = "increasing" && {relative_trend_strength} > 0.85',
+                        'column_id': 'relative_trend_strength'
+                    },
+                    'backgroundColor': 'rgba(255, 99, 71, 0.5)',  # Světle červená barva
+                    'color': 'black'  # Barva textu
+                }
+            ]),
+
+        ], style={'width': '80%'})
+    ], style={
+                'display': 'flex',
+                'flexDirection': 'row',
+                'justifyContent': 'center',  # Horizontální zarovnání na střed
+                'alignItems': 'center',      # Vertikální zarovnání na střed (pokud potřeba)
+                'gap': '20px'
+            })]
+                
+
+    
 
 
 # @callback
@@ -79,6 +115,7 @@ app.layout = [
     Output(component_id='summarized-info', component_property='children'),
     Output(component_id='plot2', component_property='figure'),
     Output(component_id='table1', component_property='data'),
+    Output(component_id='table2', component_property='data'),
     [Input(component_id='dropdown-country', component_property='value'),
      Input(component_id='dropdown-crime', component_property='value')]
 )
@@ -235,6 +272,9 @@ def update_graph(select_country, select_crime):
     )
     no_subcategory_result['avg_relative_trend_strength'] = no_subcategory_result['avg_relative_trend_strength'].round(2)
     filtred_no_subcategory_table_by_country = no_subcategory_result.sort_values(by='crime_category')
+
+    
+    filtred_table_by_country = filtred_table.sort_values(by='crime_category')
     
     # bar plot
     plot = go.Figure(
@@ -294,7 +334,7 @@ def update_graph(select_country, select_crime):
 )
     
 
-    return time_series_plot, graph_info_div, plot, filtred_no_subcategory_table_by_country.to_dict('records')
+    return time_series_plot, graph_info_div, plot, filtred_no_subcategory_table_by_country.to_dict('records'), filtred_table_by_country.to_dict('records')
 
 
 
