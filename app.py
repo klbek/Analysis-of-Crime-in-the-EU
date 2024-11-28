@@ -89,7 +89,23 @@ def update_graph(select_country, select_crime):
 
 
     # create plot figure
-    time_series_plot = px.line(crime_table.filtered_data, x='year', y='value')
+    time_series_plot = px.line(
+        crime_table.filtered_data,
+        x='year',
+        y='value',
+        title=f'Time Series for {select_country} and crime: {select_crime}'
+    ).update_layout(
+        title_x=0.5,  # Vycentrování názvu
+        xaxis=dict(
+            tickmode='array',
+            tickvals=crime_table.filtered_data['year'].unique(),  # Všechny unikátní hodnoty roku
+            title='Year'
+        ),
+        yaxis=dict(
+            title='Value'
+        )
+    )
+
 
     graph_info_div = html.Div([
     html.H2("Graph information:"),
@@ -184,7 +200,7 @@ def update_graph(select_country, select_crime):
     layout=go.Layout(
         barmode='stack',
         title=dict(
-            text=f"Crime Trends and Data Quality Indicators in {select_country}<br><span style='font-size:12px;color:gray;'>During Reporting Period</span>",
+            text=f"Crime Trends and Data Quality Indicators in {select_country}<br><span style='font-size:12px;color:gray;'>During the Reporting Period (including Subcategory)</span>",
             x=0.5,  # Center the title and subtitle
         ),
         xaxis=dict(
@@ -199,7 +215,12 @@ def update_graph(select_country, select_crime):
             dict(
                 x=crime,
                 y=filtred_table.loc[filtred_table['crime'] == crime, 'quality_range_fill_data'].sum(),
-                text=(f"{trend[:3].lower().replace('to ', '')} {'⬈' if trend[:3].lower() == 'inc' else '⬊' if trend[:3].lower() == 'dec' else '-'}<br>" f"<span style='font-size:10px;color:gray;'>"f"{str(strength) if pd.notna(strength) else ''}</span>"),
+                text = (
+                    f"{trend[:3].lower().replace('to ', '') if pd.notna(trend) else '-'} "
+                    f"{'⬈' if pd.notna(trend) and trend[:3].lower() == 'inc' else '⬊' if pd.notna(trend) and trend[:3].lower() == 'dec' else '-'}<br>"
+                    f"<span style='font-size:10px;color:gray;'>"
+                    f"{str(strength) if pd.notna(strength) else '-'}</span>"
+                ),
                 showarrow=False,
                 font=dict(size=12, color="black"),
                 xanchor="center",
