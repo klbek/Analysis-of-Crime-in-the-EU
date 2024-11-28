@@ -63,14 +63,13 @@ app.layout = [
         html.Div(children=[
             html.Label('Barchart'),
             dcc.Graph(id='plot2')
-        ], style={'width': '50%'}),
+        ], style={'width': '66%'}),
 
         html.Div(children=[
             html.Label('Table'),
-            dash_table.DataTable(id='table1',data=df_all_visual_info.to_dict(
-                'records'), page_size=10, style_table={'overflowX': 'auto'}),
+            dash_table.DataTable(id='table1', page_size=10, style_table={'overflowX': 'auto'}),
 
-        ], style={'width': '50%'})
+        ], style={'width': '25%'})
     ], style={'display': 'flex', 'flexDirection': 'row', 'gap': '20px'})]
 
 
@@ -88,7 +87,7 @@ def update_graph(select_country, select_crime):
     crime_table.filter_data(select_country, select_crime)
 
 
-    # create plot figure
+    # time series plot 
     if crime_table.filtered_data['value'].notna().sum() == 0:
         time_series_plot = px.line(
             title=f'Time Series for {select_country} and crime: {select_crime}<br><span style="font-size:12px;color:gray;">Crime category: {crime_table.crime_category if pd.notna(crime_table.crime_category) else "Unknown"}'
@@ -135,7 +134,7 @@ def update_graph(select_country, select_crime):
             showarrow=False,
             font=dict(size=12, color="red"),  # Styl textu
             align="left",
-            xanchor="left",
+            xanchor="left", 
             yanchor="bottom"
         ).add_shape(
             type='rect',
@@ -164,11 +163,11 @@ def update_graph(select_country, select_crime):
                 title='Year'
             ),
             yaxis=dict(
-                title='Value',
+                title='P_HTHAB',
             )
         )
 
-
+    # graf info
     graph_info_div = html.Div([
     html.H2("Graph information:"),
     
@@ -223,20 +222,21 @@ def update_graph(select_country, select_crime):
         f"{crime_table.statistics.statistics_dictionary['relative_trend_strength']}"
     ])
 ])
-    
+    # filtrování pro tabulku
     filtred_table = df_all_visual_info[df_all_visual_info['country'] == f'{crime_table.country}']
-    filtred_table_by_coutnry = filtred_table.sort_values(by='crime_category')
-    # print(filtred_table)
+    no_subcategory = filtred_table[~filtred_table['crime'].isin(['Rape', 'Sexual assault', 'Child pornography', 'Burglary of private residential premises', 'Theft of a motorized vehicle or parts thereof', 'Bribery'])]
+    no_subcategory_result = (
+        no_subcategory
+        .groupby(['crime_category', 'trend'])['relative_trend_strength']
+        .mean()
+        .reset_index()
+        .query("trend != 'to missing value(s)'")  # Odstranění řádků s trendem 'to missing value(s)'
+        .rename(columns={'relative_trend_strength': 'avg_relative_trend_strength'})
+    )
+    no_subcategory_result['avg_relative_trend_strength'] = no_subcategory_result['avg_relative_trend_strength'].round(2)
+    filtred_no_subcategory_table_by_country = no_subcategory_result.sort_values(by='crime_category')
     
-    # plot = px.bar(
-    #     crime_table.filtered_data,
-    #     x='year',
-    #     y='value',
-    #     title='Bar Chart for Time Series',
-    #     labels={'year': 'Year', 'value': 'Value'},
-    #     template='plotly_white'
-    # )
-
+    # bar plot
     plot = go.Figure(
     data=[
         go.Bar(
@@ -271,7 +271,7 @@ def update_graph(select_country, select_crime):
             ticktext=[x[:16] + '...' if len(x) > 16 else x for x in filtred_table['crime']],
             tickangle=45  # Rotate the X-axis labels
         ),
-        yaxis=dict(title='Value'),
+        yaxis=dict(title=''),
         template='plotly_white',
         annotations=[
             dict(
@@ -292,7 +292,9 @@ def update_graph(select_country, select_crime):
         ]
     )
 )
-    return time_series_plot, graph_info_div, plot, filtred_table_by_coutnry.to_dict('records')
+    
+
+    return time_series_plot, graph_info_div, plot, filtred_no_subcategory_table_by_country.to_dict('records')
 
 
 
