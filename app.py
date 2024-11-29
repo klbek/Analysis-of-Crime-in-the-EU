@@ -16,11 +16,6 @@ crime_table.create_summary_df_1all()
 df_all = crime_table.country_crime_info_11
 df_all_visual_info = df_all[['country', 'crime', 'crime_category', 'count_years', 'quality_range_fill_data', 'quality_range_unfill_data', 'trend', 'relative_trend_strength']]
 
-
-
-dfbar = pd.read_csv(
-    'https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
-
 app = Dash()
 
 app.layout = [
