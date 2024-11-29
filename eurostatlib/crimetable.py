@@ -24,7 +24,6 @@ class EurostatCrimeTable:
         crime_list_sorted = sorted(unpivot_data['crime_info'].unique())
         self.crime_list_sorted = crime_list_sorted
 
-        # TODO filtrace crime dle toho, jestli ma dana zeme u crime alespon 1 vyplnenou hodnotu
 
     def load_data(self, path, geo_df, iccs_df):
         data = pd.read_csv(path, sep='\t')
@@ -44,7 +43,7 @@ class EurostatCrimeTable:
 
         data = data.drop(columns=['geo', 'iccs'])
 
-        # presun rozdelenych a naparovaných udaju  na zacatek df
+        # presun rozdelenych a naparovaných udaju na zacatek df
         reorg_columns = data.columns.tolist()
         final_reorg_columns = reorg_columns[-(count_split_columns):] + \
             reorg_columns[:-(count_split_columns)]
@@ -224,5 +223,3 @@ class EurostatCrimeTable:
 
         self.country_crime_info_11 = country_crime_info_11
 
-    def __str__(self):
-        print(f'info {self.statistics}')
