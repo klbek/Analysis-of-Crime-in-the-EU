@@ -84,8 +84,7 @@ class EurostatCrimeTable:
 
         # overeni vyplnenych hodnot - existence range
         if pd.notna(stat.last_fill_year) and pd.notna(stat.max_range_year):
-            info = f'Between {stat.first_fill_year} and {stat.last_fill_year}, {self.country} reported {
-                stat.count_fill_values} recorded entries for {self.crime} covering a {stat.count_years}-year period. '
+            info = f'Between {stat.first_fill_year} and {stat.last_fill_year}, {self.country} reported {stat.count_fill_values} recorded entries for {self.crime} in the {stat.count_years}-year period. '
 
         else:
             info = 'Data disclosure information is incomplete or missing. '
@@ -107,26 +106,26 @@ class EurostatCrimeTable:
             # Trend info
             if pd.notna(trend):
                 if trend == 'increasing':
-                    info_trend = 'This crime exhibits an increasing trend, suggesting that its occurrence is on the rise. '
+                    info_trend = 'The crime trend is increasing '
                 elif trend == 'decreasing':
-                    info_trend = 'This crime exhibits a decreasing trend, indicating that its occurrence is declining. '
+                    info_trend = 'The crime trend is decreasing '
                 else:
-                    info_trend = 'The trend cannot be determined due to missing value(s). '
+                    info_trend = 'The trend is unclear due to missing data. '
             else:
-                info_trend = 'The trend cannot be determined due to missing values. '
+                info_trend = 'The trend is unclear due to missing data. '
 
             # Trend strength info
             if pd.notna(trend):
                 if trend == 'to missing value(s)':
                     info_trend_strength = ''
                 elif trend_stregth >= 0.8:
-                    info_trend_strength = 'The trend appears very strong, though it may be influenced by significant fluctuations in the data across certain years. '
+                    info_trend_strength = 'and very strong. '
                 elif 0.5 < trend_stregth < 0.8:
-                    info_trend_strength = 'The trend is moderately strong, though certain years show deviations that may impact its consistency. '
+                    info_trend_strength = 'and is moderately strong. '
                 else:
-                    info_trend_strength = 'The trend is weak or inconsistent, with fluctuations that tend to cancel each other out over time. '
+                    info_trend_strength = 'and its weak nature suggests the possibility of slight movement in the opposite direction. '
             else:
-                info_trend_strength = 'The trend strength cannot be determined due to missing values. '
+                info_trend_strength = 'The strength of the trend cannot be determined due to missing or incomplete data. '
 
             # Crime category info
             if category == 'visible':
@@ -140,9 +139,9 @@ class EurostatCrimeTable:
 
             # Variabilita info
             if std_dev / mean > 0.5:
-                variability_info = 'The values show high variability, which may be due to exceptional events in certain years. '
+                variability_info = 'The data exhibits significant variability, potentially influenced by exceptional events. '
             elif std_dev / mean > 0.2:
-                variability_info = 'The data exhibits variability, with occasional deviations from the average. '
+                variability_info = 'The data shows moderate variability, with occasional fluctuations around the average. '
             else:
                 variability_info = 'The values are highly consistent, with low variability. '
 
@@ -150,8 +149,7 @@ class EurostatCrimeTable:
             if unfill_values > 0:
                 relative_unfill = round(
                     (unfill_values / (unfill_values + fill_values)) * 100, 2)
-                unfill_info = f'During the observed period, {
-                    relative_unfill}% of the values were missing. This proportion of unfilled data may introduce biases into the results, warranting further investigation into the causes of these gaps. '
+                unfill_info = f'During the observed period, {relative_unfill}% of the values were missing. This proportion of unfilled data may introduce biases into the results, warranting further investigation into the causes of these gaps. '
             else:
                 unfill_info = f'During the observed period, there were no missing values. '
 
