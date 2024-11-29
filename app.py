@@ -24,58 +24,58 @@ dfbar = pd.read_csv(
 app = Dash()
 
 app.layout = [
-    html.H1(className='row', children='Crime in EU',
-            style={'textAlign': 'center', 'color': 'blue', 'fontSize': 30}),
+    html.H1(className='row', children='Crime in European Union',
+            style={'backgroundColor': '#eee','textAlign': 'left', 'fontFamily': '"Open Sans", verdana, arial, sans-serif', 'fontSize': '40px', 'color': 'rgb(42, 63, 95)', 'fontWeight': 'normal', 'padding': '30px', 'paddingLeft': '80px', 'marginBottom': '10px'}),
     html.Div([
         html.Div(children=[
+            html.Div(children=[
             html.Div(children=[
             html.Label('Country'),
             dcc.Dropdown(crime_table.country_list_sorted,
                          crime_table.country_list_sorted[7], id='dropdown-country'),
-
-            html.Br(),
+            ], style={'width': '300px'}),
+            html.Div(children=[
             html.Label('Crime'),
             dcc.Dropdown(crime_table.crime_list_sorted,
                          crime_table.crime_list_sorted[1], id='dropdown-crime'),
 
-            ], style={'maxWidth': '300px'}),
+            ], style={'width': '300px'})
+            ], style={'marginLeft': '80px', 'display': 'flex', 'gap': '20px', 'width': '100%'}),
             html.Br(),
-            dcc.Graph(id='plot1')  # , style= {'width': '50%'}
-        ], style={'padding': 10, 'flex': 2, 'width': '66%'}),
+            dcc.Graph(id='plot1'),
+        ], style={'padding': 10, 'backgroundColor': '#eee','flex': 2, 'width': '66%', 'marginRight': '10px'}),
 
 
         html.Div(children=[
-            html.Label('Summarized Info'),
-            html.Br(),
             html.Plaintext(
                 id='summarized-info',
                 style={'height': 300, 'width': '100%', 'textWrap' : 'wrap'},
             )], style={'padding': 10,
                        'flex': 1,
                        'width': '34%',
+                       'backgroundColor': '#eee',
                        'display': 'flex',
                        'flexDirection': 'column' }
         )
-    ], style={'display': 'flex', 'flexDirection': 'row', 'width': '100%'}  # , 'width': '50%'
+    ], style={'display': 'flex', 'flexDirection': 'row', 'width': '100%', 'marginBottom': '20px'}
     ),
 
     html.Div([
         html.Div(children=[
-            html.Label('Barchart'),
             dcc.Graph(id='plot2')
-        ], style={'width': '66%'}),
+        ], style={'backgroundColor': '#eee','flex': 2,'width': '66%', 'marginRight': '10px', 'padding': '10px'}),
 
         html.Div(children=[
-            html.Label(f'Summary Trend Table excluding subcategory and no trend'),
+            html.Div(f'Summary trend table excluding subcategory and no trend', style={'fontFamily': '"Open Sans", verdana, arial, sans-serif', 'fontSize': '17px', 'color': 'rgb(42, 63, 95)', 'fontWeight': 'normal', 'fontStyle': 'normal', 'fontVariant': 'normal', 'textAlign': 'center', 'paddingBottom': '10px'}),
             dash_table.DataTable(id='table1', page_size=10, style_table={'overflowX': 'auto'}),
 
-        ], style={'width': '25%'})
-    ], style={'display': 'flex', 'flexDirection': 'row', 'gap': '20px'}),
+        ], style={'backgroundColor': '#eee', 'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center','flex': 1,'padding': 10,'width': '34%', 'paddingTop': '40px', 'gap': '10px'})
+    ], style={'display': 'flex', 'flexDirection': 'row'}),
 
     html.Div([
         html.Div(children=[
-            html.Label(f'Summary Trend Table including subcategory'),
-            dash_table.DataTable(id='table2', page_size=10, style_table={'overflowX': 'auto'},style_data_conditional=[
+            html.Div(f'Summary trend table including Subcategory', style={'fontFamily': '"Open Sans", verdana, arial, sans-serif', 'fontSize': '17px', 'color': 'rgb(42, 63, 95)', 'fontWeight': 'normal', 'fontStyle': 'normal', 'fontVariant': 'normal', 'textAlign': 'center', 'paddingBottom': '10px'}),
+            dash_table.DataTable(id='table2', style_table={'overflowX': 'auto', 'textAlign': 'auto'},style_data_conditional=[
                 # Podmínka pro 'decreasing' a relative_trend_strength > 0.9
                 {
                     'if': {
@@ -83,7 +83,7 @@ app.layout = [
                         'column_id': 'relative_trend_strength'
                     },
                     'backgroundColor': 'rgba(144, 238, 144, 0.5)',  # Světle zelená barva
-                    'color': 'black'  # Barva textu
+                    'color': 'black' 
                 },
                 # Podmínka pro 'increasing' a relative_trend_strength > 0.9
                 {
@@ -92,24 +92,13 @@ app.layout = [
                         'column_id': 'relative_trend_strength'
                     },
                     'backgroundColor': 'rgba(255, 99, 71, 0.5)',  # Světle červená barva
-                    'color': 'black'  # Barva textu
+                    'color': 'black' 
                 }
             ]),
 
-        ], style={'width': '80%'})
-    ], style={
-                'display': 'flex',
-                'flexDirection': 'row',
-                'justifyContent': 'center',  # Horizontální zarovnání na střed
-                'alignItems': 'center',      # Vertikální zarovnání na střed (pokud potřeba)
-                'gap': '20px'
-            })]
-                
+        ], style={'backgroundColor': '#eee','width': '100%', 'marginTop': '20px', 'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'paddingTop': '40px', 'paddingBottom': '100px', 'gap': '10px'})
+    ])]
 
-    
-
-
-# @callback
 @app.callback(
     Output(component_id='plot1', component_property='figure'),
     Output(component_id='summarized-info', component_property='children'),
@@ -122,7 +111,6 @@ app.layout = [
 def update_graph(select_country, select_crime):
 
     crime_table.filter_data(select_country, select_crime)
-
 
     # time series plot 
     if crime_table.filtered_data['value'].notna().sum() == 0:
@@ -140,10 +128,10 @@ def update_graph(select_country, select_crime):
         ).update_layout(
             title_x=0.5,
             xaxis=dict(
-                visible=False  # Skryje osu X
+                visible=False
             ),
             yaxis=dict(
-                visible=False  # Skryje osu Y
+                visible=False
             )
         )
     else:
@@ -332,11 +320,8 @@ def update_graph(select_country, select_crime):
         ]
     )
 )
-    
 
     return time_series_plot, graph_info_div, plot, filtred_no_subcategory_table_by_country.to_dict('records'), filtred_table_by_country.to_dict('records')
-
-
 
 
 if __name__ == '__main__':

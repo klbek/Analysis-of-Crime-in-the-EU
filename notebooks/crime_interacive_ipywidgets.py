@@ -4,14 +4,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+import sys
+import os
+
+# Add parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
+
 from eurostatlib.crimetable import EurostatCrimeTable
 
 crime_table = EurostatCrimeTable()
 
-geo_df = pd.read_csv(r'data\geo.csv')
-iccs_df = pd.read_csv(r'data\iccs.csv')
+geo_df = pd.read_csv(r'..\data\geo.csv')
+iccs_df = pd.read_csv(r'..\data\iccs.csv')
 
-crime_table.load_data(f'data/estat_crim_off_cat.tsv', geo_df, iccs_df)
+crime_table.load_data(f'../data/estat_crim_off_cat.tsv', geo_df, iccs_df)
 
 
 country = widgets.Dropdown(
