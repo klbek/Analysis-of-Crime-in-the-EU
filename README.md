@@ -1,65 +1,115 @@
 # Kriminalita v zemích EU
 
 ## Cíl projektu
-
 Cílem projektu je automatizace zpracování dat o kriminalitě v zemích EU a jejich statistická analýza. Projekt se zaměřuje na identifikaci extrémů v kriminalitních činech v jednotlivých státech a sledování jejich dlouhodobých trendů. Projekt poskytne podklad pro zodpovězení klíčových otázek, jako například: Které země EU čelí největším výkyvům v kriminalitě? Jaké trestné činy jsou nejvíce na vzestupu?
 
-## Dataset z Eurostatu
+## Práce s datasetem a doporučené postupy
+Pro správnou práci s datasetem je nezbytné prostudovat dostupnou [dokumentaci](https://ec.europa.eu/eurostat/cache/metadata/en/crim_sims.htm) a [doporučení](https://ec.europa.eu/eurostat/documents/3859598/18846431/KS-GQ-24-010-EN-N.pdf/ef737587-085e-6018-8038-e41f59222020?version=3.0&t=1712826948630) od Eurostatu. Tím se minimalizuje riziko nesprávného použití dat a následné chybné interpretace výsledků.
 
-Pro práci s datasetem je potřeba si nastudovat příslušné [dokumentace](https://ec.europa.eu/eurostat/cache/metadata/en/crim_sims.htm) a [doporučení](https://ec.europa.eu/eurostat/documents/3859598/18846431/KS-GQ-24-010-EN-N.pdf/ef737587-085e-6018-8038-e41f59222020?version=3.0&t=1712826948630) od Eurostatu, abychom se vyvarovali špatnému používání dat a ve výsledku i chybné interpretaci.
+Zpracován je základní dataset *Police-recorded offences by offence category (crim_off_cat)* z kategorie *Police-recorded offences (crim_off)* z [databáze Crime and criminal justice](https://ec.europa.eu/eurostat/web/crime/database) z Eurostatu.
 
-Zpracován je základní dataset 'Police-recorded offences by offence category (crim_off_cat)' z kategorie 'Police-recorded offences(crim_off)' z [databáze Crime and criminal justice](https://ec.europa.eu/eurostat/web/crime/database) z Eurostatu.
+### Příprava dat a číselníků
+Číselníky pro rozkódování kriminálních činů a zemí byly vytvořeny za pomoci Pythonu. Raw data byla manuálně extrahována z tabulek základního datasetu v menu (bohužel nebyl nalezen lepší zdroj). Následně byla data vyčištěna a číselníky uloženy ve formátu `.csv` ve složce [data](/data).
 
-Číselníky pro rozkódování kriminálních činnů a rozkódování zemí byly vytvořeny za pomoci Pythonu, raw data byla ručně zkopírovaná po rozkliknutí tabulek základního datasetu v menu (nepodařilo se najít žádný jiný a lepší zdroj) do textového souboru a dále vyčištěna. Číselníky jsou uloženy jako .csv ve složce [data](/data).
+## Důležité poznámky k interpretaci dat
+1. **Významné změny mezi roky**  
+   Eurostat zveřejňuje data pouze tehdy, pokud jsou potvrzena jednotlivými zeměmi. Extrémní výkyvy tak pravděpodobně odrážejí skutečné změny, nikoli chyby v publikaci dat.
 
-Významné změny mezi roky musí být potvrzeny zeměmi, dříve Eurostat data nezveřejní. Pro práci s daty je toto zásadní údaj, protože můžeme předpokládat, že extrémní výkyvy jsou opravdu výkyvy, ne chyba při zveřejňování dat. 
+2. **Rozdíly v legislativě**  
+   Některé činy mohou být v jedné zemi klasifikovány jako přestupky, zatímco v jiné jako trestné činy. Proto je nejvhodnější srovnávat trendy v čase namísto absolutních úrovní kriminality mezi státy.
 
-Některé zločiny jsou v jedné zemi považovány za přestupky, v jiné za trestné činy.
+3. **Srovnatelnost států**  
+   Pokud chcete srovnávat jednotlivé země, je nutné podrobně prostudovat dokumentaci a analyzovat, které státy lze srovnávat pro konkrétní kriminální činy. Legislativa a metodika sběru dat se totiž mezi státy liší, i přes snahy o standardizaci.
 
-Nejvhodnější je srovnávat trendy, nikoli absolutní úrovně kriminality. Vzhledem k jiné legislativě, metodice sběru dat (i když je standardizovaná), není vhodné porovnávat státy mezi sebou. Případně je potřeba si velmi podrobně nastudovat dokumentaci a pro jednotlivé kriminální činy si zjistit, které státy bychom mohli teoreticky srovnávat. 
+4. **Podkategorie v datech**  
+   Dataset obsahuje podkategorie, které ponecháváme k dispozici pro detailnější analýzu. V případě potřeby je možné je odfiltrovat. Mezi podkategorie patří:
+   - **Sexual violence**: Rape, Sexual assault
+   - **Sexual exploitation**: Child pornography
+   - **Burglary**: Burglary of private residential premises
+   - **Theft**: Theft of a motorized vehicle or parts thereof
+   - **Corruption**: Bribery
 
-V datech figurují i podkategorie, které v datech ponecháváme a v případě potřeby je na závěr odfiltrujeme:
+### Omezení dostupnosti dat
 
-- Sexual violence: Rape, Sexual assault
-- Sexual exploitation: Child pornography
-- Burglary: Burglary of private residential premises
-- Theft: Theft of a motorized vehicle or parts thereof
-- Corruption: Bribery
-
-Od roku 2019 včetně přestali data postytovat Scotland, England and Wales, Northern Ireland. 
+Od roku 2019 přestaly poskytovat data následující země:
+- **Scotland**
+- **England and Wales**
+- **Northern Ireland**
 
 
 ## Metodika a postup zpracování dat
 
-Data se ukázala jako velmi bohatá na informace avšak ve své původní podobě špatně interpretovatelná, bylo potřeba je transformovat. Protože se brzy ukázalo, že je kód díky tolika manipulacím a různým statistický výpočtům špatně čitelný, znovupožitelný aj, ke zpracování dat se přistoupilo jinak. Celý základní dataset je uzavřen do třídy `EurostatCrimeTable` a refenerčně se odkazuje na třídu `Statistics`, která za nás automatizovaně vypočítá podstatné údaje a obslouží výjimky. Pomocí funkce `create_summary_df_1all()` třídy `EurostatCrimeTable` nám vznikne nový souhrnný dataframe, ze kterého můžeme i bez grafů číst zajímavé informace. 
+### Transformace dat
 
-V rámci transformace je potřeba data nahrát, rozdělit první složený sloupec na jednotlivé sloupce, rozkódovat číselné kody trestných činnů a názvy zemí, nechat si pouze údaje, které jsou přepočítané na 100tis obyvatel dané země. Na závěr je potřeba data unpivotovat a jednotlivé roky a jejich hodnoty dostat ze sloupců do řádků. Tuto tranformaci nám zajistí funkce `load_data` a výsledek se uloží do parametru `data` třídy `EurostatCrimeTable`. 
+Dataset se ukázal být bohatý na informace, ale ve své původní podobě špatně interpretovatelný, což si vyžádalo rozsáhlou transformaci. Při prvotním zpracování se ukázalo, že kvůli četným manipulacím a statistickým výpočtům je kód špatně čitelný a znovupoužitelný, a tedy i neefektivní. Z tohoto důvodu byl vytvořen nový přístup, který řeší tyto problémy pomocí objektově orientovaného programování.
 
-Při zavolání funkce `filter_data` se nám data vyfiltrují a automaticky dopočítají statistické ukazatele a souhrnné informace pro zadanou zemi a trestný čin. Filtrování jsme si usnadnili pomocí `ipywidgets`, abychom nemuseli kod neustále ručně neefektivně přepisovat.
+Celé zpracování základního datasetu je nyní uzavřeno do třídy `EurostatCrimeTable`, která se referenčně odkazuje na třídu `Statistics`. Třída `Statistics` automatizuje výpočet důležitých ukazatelů a zpracování výjimek. Pomocí funkce `create_summary_df_1all()` třídy `EurostatCrimeTable` lze snadno vytvořit souhrnný dataframe, který nabízí klíčové informace bez nutnosti grafické vizualizace.
 
-Kriminálí činny byly roztřízeny do tří kategorií dle toho, jak moc jsou viditelné, odhalitelné a v podstatě často hlášené:
+### Kroky transformace
 
-- visible
-- sensitive
-- hidden
+Transformace dat zahrnuje ve zkratce následující kroky:
+1. **Načtení dat**: Dataset se načte a uloží pomocí funkce `load_data`.
+2. **Rozdělení sloupců**: První složený sloupec je rozdělen na jednotlivé sloupce.
+3. **Rozkódování dat**: Číselné kódy trestných činů a názvy zemí jsou rozkódovány.
+4. **Vyčistění dat a přetypovaní dat** 
+4. **Filtrování údajů**: Zachována jsou pouze data přepočítaná na 100 tisíc obyvatel každé země.
+5. **Unpivotování dat**: Jednotlivé roky a jejich hodnoty jsou transformovány ze sloupců do řádků. Tento výsledek je uložen do parametru `data` třídy `EurostatCrimeTable`.
 
-S jejich pomocí pak můžeme relevatněji interpretovat data, protože růst visible činnů bude znamenat růst zvýšeného výskytu, kdežto u sensitiv kategorie to bude znamenat, že docházi k častějšímu nahlašování. 
+### Automatizace filtrování a analýzy
 
-Během práce s daty nám vznikly tři způsoby použití kódu:
+Pomocí funkce `filter_data` lze dataset filtrovat podle země a trestného činu. Tato funkce zároveň automaticky dopočítá statistické ukazatele a souhrnné informace. Pro zjednodušení filtrování bylo použito `ipywidgets`, což eliminuje nutnost ručního přepisování kódu.
 
-1) Práce v [interaktivním jupyter notebooku](notebooks/crime_analysis_by_country.ipynb), který za nás filtruje data, vykresluje graf a poskytuje základní popis dat. S filtrovanými daty můžeme pod interaktivní částí dále pracovat, jednoduše se dostaneme i k základnímu přetransforovanému datasetu, ve kterém jsou všechny země a trestné činny, který se ukrývá pod parametrem `data` třídy `EurostatCrimeTable`.
-2) Pro lepší vizualizace a hlubší pochopení celkového kontextu dat pro jednotlivé země a kriminální čin(y) byl nakonec vytvořen přehledový Dash data dashboard pomocí využívající Plotly. Pro jeho spuštění je potřeba spustit aplikaci `python app.py`
-3) Pro zkoumání souhrnných číselných údajů lze použít [běžný jupyter notebook](notebooks/summarized_crime_info.ipynb). 
+### Kategorizace trestných činů
 
-Během spuštěné aplikace `app.py` je doporučeno nespouštět i interaktivni ipywidgets, protože může dojít ke kolizi a mohou se "duplikovat" grafy v notebooku. 
+Trestné činy byly roztříděny do tří kategorií podle jejich viditelnosti, odhalitelnosti a frekvence hlášení:
+- **Visible**: Trestné činy, jejichž růst obvykle indikuje zvýšený výskyt.
+- **Sensitive**: Trestné činy, jejichž růst naznačuje častější hlášení.
+- **Hidden**: Trestné činy, které jsou obtížně odhalitelné a méně často hlášené.
+
+Tato kategorizace umožňuje přesnější interpretaci trendů v datech.
+
+
+## Způsoby použití kódu
+
+Během práce s daty byly vytvořeny tři hlavní způsoby použití kódu:
+
+1. **Interaktivní Jupyter notebook**  
+   Notebook [crime_analysis_by_country.ipynb](notebooks/crime_analysis_by_country.ipynb) umožňuje:
+   - Filtraci dat
+   - Vizualizaci grafů
+   - Poskytnutí základního popisu dat  
+   Filtrovaná data jsou dostupná pro další analýzu a transformovaný dataset je přístupný přes parametr `data` třídy `EurostatCrimeTable`.
+
+2. **Dash Data Dashboard**  
+   Přehledový dashboard byl vytvořen pomocí Dash a Plotly pro hlubší vizualizaci a pochopení dat. Spustíte jej příkazem:
+   ```bash
+   python app.py
+
+3. **Souhrnný Jupyter notebook**
+
+    Notebook [summarized_crime_info.ipynb](notebooks/summarized_crime_info.ipynb) umožňuje zkoumání souhrnných číselných údajů.
+
 
 ## Jak pracovat s repozitářem a jak spustit Dash aplikaci
 
-Po naklonování repozitáře otevřete [requiremets](requirements.txt) a dle pokynů v něm si nainstalujte virtuální prostřední, aktivujte ho a naistalujte závislosti. 
+1. **Naklonování repozitáře**  
+   Po naklonování repozitáře otevřete soubor [requirements.txt](requirements.txt). Postupujte podle pokynů v souboru:
+   - Nastavte virtuální prostředí.
+   - Aktivujte virtuální prostředí.
+   - Nainstalujte závislosti uvedené v souboru.
 
-Po instalaci je možné si spustit jupyter notebooky ve složce notebooks a to buď [interaktivní notebook](notebooks/crime_analysis_by_country.ipynb) zaměřující se na kombinaci země a vybraný kriminální čin, nebo [sumarizační notebook](notebooks/summarized_crime_info.ipynb) zaměřující se hodnocení vypočtených ukazatelů pro všechny země a jejich kriminální činny.
+2. **Spuštění Jupyter notebooků**  
+   Po instalaci závislostí můžete pracovat s notebooky ve složce `notebooks`:
+   - **[Interaktivní notebook](notebooks/crime_analysis_by_country.ipynb)**  
+     Tento notebook je zaměřený na analýzu kombinace vybrané země a kriminálního činu.
+   - **[Sumarizační notebook](notebooks/summarized_crime_info.ipynb)**  
+     Tento notebook slouží k hodnocení vypočtených ukazatelů pro všechny země a kriminální činy.
 
-Spuštěním `python app.py` se Vám spustí sumarizační dashboard na adrese [http://127.0.0.1:8050/](http://127.0.0.1:8050/), který ukazuje pokročilejší vizualizace. 
+3. **Spuštění Dash aplikace**  
+   Dashboard můžete spustit pomocí příkazu níže, který Vám spustí sumarizační dashboard na adrese [http://127.0.0.1:8050/](http://127.0.0.1:8050/), který ukazuje pokročilejší vizualizace:
+   ```bash
+   python app.py
+
 
 ## Questions & Feedback
 
