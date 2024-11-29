@@ -30,7 +30,7 @@ class EurostatCrimeTable:
         data = pd.read_csv(path, sep='\t')
 
         data = data.rename({data.columns[0]: data.columns[0].replace(
-            r'\TIME_PERIOD', '')}, axis='columns')
+            '\\TIME_PERIOD', '')}, axis='columns')
         split_name_columns = (data.columns[0]).split(',')
         count_split_columns = len(split_name_columns)
         data[split_name_columns] = data[data.columns[0]
