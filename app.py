@@ -8,8 +8,8 @@ from eurostatlib.crimetable import EurostatCrimeTable
 
 crime_table = EurostatCrimeTable()
 
-geo_df = pd.read_csv(r'data\geo.csv')
-iccs_df = pd.read_csv(r'data\iccs.csv')
+geo_df = pd.read_csv(f'data/geo.csv')
+iccs_df = pd.read_csv(f'data/iccs.csv')
 
 crime_table.load_data(f'data/estat_crim_off_cat.tsv', geo_df, iccs_df)
 crime_table.create_summary_df_1all()
