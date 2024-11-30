@@ -14,7 +14,7 @@ iccs_df = pd.read_csv(f'data/iccs.csv')
 crime_table.load_data(f'data/estat_crim_off_cat.tsv', geo_df, iccs_df)
 crime_table.create_summary_df_1all()
 df_all = crime_table.country_crime_info_11
-df_all_visual_info = df_all[['country', 'crime', 'crime_category', 'count_years', 'quality_range_fill_data', 'quality_range_unfill_data', 'trend', 'relative_trend_strength']]
+df_all_visual_info = df_all[['country', 'crime', 'crime_category', 'count_years', 'quality_range_fill_data', 'quality_range_unfill_data', 'trend', 'relative_trend_strength', 'count_outliers']]
 
 app = Dash()
 
@@ -88,7 +88,15 @@ app.layout = [
                     },
                     'backgroundColor': 'rgba(255, 99, 71, 0.5)',  # Světle červená barva
                     'color': 'black' 
-                }
+                },
+                {
+                    'if': {
+                        'filter_query': '{count_outliers} > 0',
+                        'column_id': 'count_outliers'
+                    },
+                    'backgroundColor': 'lightgrey',  # Světle šedá barva
+                    'color': 'black'
+                },
             ]),
 
         ], style={'backgroundColor': '#eee','width': '100%', 'marginTop': '20px', 'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center', 'paddingTop': '40px', 'paddingBottom': '100px', 'gap': '10px'})
