@@ -24,8 +24,29 @@ class Statistics:
     min_range_year: int = pd.NA
     max_range_year: int = pd.NA
     statistics_dictionary: dict = None
+    count_outliers: int = 0
+
+    def _calc_count_outliers(self, data):
+        data = [x for x in data if not numpy.isnan(x)]  # Vynecha NaN hodnoty
+        # Výpočet kvartilů a IQR
+        Q1 = numpy.percentile(data, 25) 
+        Q3 = numpy.percentile(data, 75) 
+        IQR = Q3 - Q1 
+
+        # Mezní hodnoty pro odlehlé hodnoty
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Počet odlehlých hodnot
+        outliers = []
+        for x in data:
+            if x < lower_bound or x > upper_bound:
+                outliers.append(x)
+
+        self.count_outliers = len(outliers)
 
     def get_statistics_dict_info(self):
+
         self.statistics_dictionary = {
             'count_years': self.count_years,
             'count_fill_values': self.count_fill_values,
@@ -44,7 +65,8 @@ class Statistics:
             'trend': self.trend,
             'relative_trend_strength': self.relative_trend_strength,
             'min_range_year': self.min_range_year,
-            'max_range_year': self.max_range_year
+            'max_range_year': self.max_range_year,
+            'count_outliers': self.count_outliers
         }
 
     def _check_trend(self, data):
@@ -65,6 +87,7 @@ class Statistics:
                 self.trend = 'decreasing'
                 self.relative_trend_strength = round(
                     abs(sum_negative_number) / (sum_positive_number + abs(sum_negative_number)), 2)
+            self._calc_count_outliers(data)
 
         # TODO: možno upravit fci tak, aby u ojediněle chybějících hodnot doplnila pomocí lineární interpolace hodnoty.
 

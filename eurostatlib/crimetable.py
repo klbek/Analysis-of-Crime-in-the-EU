@@ -96,11 +96,11 @@ class EurostatCrimeTable:
             trend = self.statistics.statistics_dictionary['trend']
             category = self.crime_category
             trend_stregth = self.statistics.statistics_dictionary['relative_trend_strength']
-            std_dev = self.statistics.statistics_dictionary['standard_deviation']
-            mean = self.statistics.statistics_dictionary['mean_value']
             unfill_values = self.statistics.statistics_dictionary['quality_range_unfill_data']
             fill_values = self.statistics.statistics_dictionary['quality_range_fill_data']
             crime = self.crime
+            outliers =  self.statistics.count_outliers
+
 
             # Trend info
             if pd.notna(trend):
@@ -136,13 +136,11 @@ class EurostatCrimeTable:
             else:
                 category_info = 'The crime category is missing or invalid. '
 
-            # Variabilita info
-            if std_dev / mean > 0.5:
-                variability_info = 'The data exhibits significant variability, potentially influenced by exceptional events. '
-            elif std_dev / mean > 0.2:
-                variability_info = 'The data shows moderate variability, with occasional fluctuations around the average. '
+            # Outliers info
+            if outliers >= 1:
+                outliers_info = f'The data exhibits {outliers} suspicious values. '
             else:
-                variability_info = 'The values are highly consistent, with low variability. '
+                outliers_info = ''
 
             # Unfill/missing values
             if unfill_values > 0:
@@ -167,7 +165,7 @@ class EurostatCrimeTable:
                 subcategory = ''
 
             self.statistics_info = info + info_trend + info_trend_strength + \
-                category_info + variability_info + unfill_info + subcategory
+                category_info + outliers_info + unfill_info + subcategory
 
     def filter_data(self, country, crime):
         self.country = country

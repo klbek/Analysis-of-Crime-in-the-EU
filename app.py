@@ -104,10 +104,9 @@ app.layout = [
      Input(component_id='dropdown-crime', component_property='value')]
 )
 def update_graph(select_country, select_crime):
-
     crime_table.filter_data(select_country, select_crime)
 
-    # time series plot 
+    # time series plot
     if crime_table.filtered_data['value'].notna().sum() == 0:
         time_series_plot = px.line(
             title=f'Time Series for {select_country} and crime: {select_crime}<br><span style="font-size:12px;color:gray;">Crime category: {crime_table.crime_category if pd.notna(crime_table.crime_category) else "Unknown"}'
@@ -130,7 +129,14 @@ def update_graph(select_country, select_crime):
             )
         )
     else:
-    # Pokud jsou hodnoty dostupné, vytvoří standardní graf
+        # Výpočet IQR
+        Q1 = crime_table.filtered_data['value'].quantile(0.25)
+        Q3 = crime_table.filtered_data['value'].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Pokud jsou hodnoty dostupné, vytvoří graf s IQR
         time_series_plot = px.line(
             crime_table.filtered_data,
             x='year',
@@ -139,53 +145,68 @@ def update_graph(select_country, select_crime):
         ).update_traces(
             mode='lines+markers'  # Zobrazení čáry i bodů
         ).add_shape(
-            type='line',
-            x0=crime_table.filtered_data['year'].min(),
-            x1=crime_table.filtered_data['year'].max(),
-            y0=crime_table.filtered_data['value'].mean(),
-            y1=crime_table.filtered_data['value'].mean(),
-            line=dict(color='red', dash='dash'),
-            xref='x',
-            yref='y'
-        ).add_annotation(
-            x=crime_table.filtered_data['year'].max() - 1.5,  # Začátek osy X
-            y=crime_table.filtered_data['value'].mean(),  # Průměrná hodnota na ose Y
-            text=f"Average: {crime_table.filtered_data['value'].mean():.2f}",  # Popisek
-            showarrow=False,
-            font=dict(size=12, color="red"),  # Styl textu
-            align="left",
-            xanchor="left", 
-            yanchor="bottom"
-        ).add_shape(
             type='rect',
             x0=crime_table.filtered_data['year'].min(),
             x1=crime_table.filtered_data['year'].max(),
-            y0=crime_table.filtered_data['value'].mean() - crime_table.filtered_data['value'].std(),
-            y1=crime_table.filtered_data['value'].mean() + crime_table.filtered_data['value'].std(),
-            fillcolor="rgba(0, 0, 255, 0.1)",
+            y0=lower_bound,
+            y1=upper_bound,
+            fillcolor="rgba(0, 128, 255, 0.3)",  # Zelený odstín pro IQR rozsah
             line_width=0,
             layer="below"
         ).add_annotation(
             x=crime_table.filtered_data['year'].max() + 0.5,  # Na pravý okraj osy X
-            y=crime_table.filtered_data['value'].mean(),  # Na úroveň průměru
-            text="Standard Deviation Range",  # Popisek
+            y=(upper_bound + lower_bound) / 2,  # Uprostřed rozsahu IQR
+            text="IQR Range",  # Popisek
             textangle=90,
             showarrow=False,
             font=dict(size=12, color="blue"),  # Styl textu
             align="right",
             xanchor="right",
             yanchor="middle"
+        ).add_annotation(
+            x=crime_table.filtered_data['year'].max() - 1.5,
+            y=upper_bound,
+            text=f"IQR Upper Bound: {upper_bound:.2f}",
+            showarrow=False,
+            font=dict(size=12, color="blue"),
+            align="left"
+        ).add_annotation(
+            x=crime_table.filtered_data['year'].max() - 1.5,
+            y=lower_bound,
+            text=f"IQR Lower Bound: {lower_bound:.2f}",
+            showarrow=False,
+            font=dict(size=12, color="blue"),
+            align="left"
+        ).add_shape(
+        type="line",
+        x0=crime_table.filtered_data['year'].min(),
+        x1=crime_table.filtered_data['year'].max(),
+        y0=crime_table.statistics.mean_value,
+        y1=crime_table.statistics.mean_value,
+        line=dict(color="red", dash="dash"),  # Červená přerušovaná čára
+        xref="x",
+            yref="y"
+        ).add_annotation(
+            x=crime_table.filtered_data['year'].max() + 0.5,  # Na pravý okraj osy X
+            y=crime_table.statistics.mean_value,  # Na úroveň průměru
+            text=f"Mean: {crime_table.statistics.mean_value:.2f}",  # Popisek průměru
+            showarrow=False,
+            font=dict(size=12, color="red"),
+            align="left",
+            xanchor="left",
+            yanchor="bottom"
         ).update_layout(
-            title_x=0.5,  # Vycentrování názvu
-            xaxis=dict(
-                tickmode='array',
-                tickvals=crime_table.filtered_data['year'].unique(),  # Všechny unikátní hodnoty roku
-                title='Year'
-            ),
-            yaxis=dict(
-                title='P_HTHAB',
+                title_x=0.5,  # Vycentrování názvu
+                xaxis=dict(
+                    tickmode='array',
+                    tickvals=crime_table.filtered_data['year'].unique(),  # Všechny unikátní hodnoty roku
+                    title='Year'
+                ),
+                yaxis=dict(
+                    title='P_HTHAB',
+                )
             )
-        )
+
 
     # graf info
     graph_info_div = html.Div([
@@ -240,6 +261,10 @@ def update_graph(select_country, select_crime):
     html.P([
         html.B("Relative trend strength: "), 
         f"{crime_table.statistics.statistics_dictionary['relative_trend_strength']}"
+    ]),
+    html.P([
+        html.B("Suspicious values: "), 
+        f"{crime_table.statistics.statistics_dictionary['count_outliers']}"
     ])
 ])
     # filtrování pro tabulku
