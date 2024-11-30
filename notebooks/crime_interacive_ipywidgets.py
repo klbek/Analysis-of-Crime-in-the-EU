@@ -61,6 +61,7 @@ def update_output(*args):
         <p><b>crime category:</b> {crime_table.crime_category}</p>
         <p><b>trend:</b> {crime_dict_info['trend']}</p>
         <p><b>relative trend strength:</b> {crime_dict_info['relative_trend_strength']}</p>
+        <p><b>suspicious values:</b> {crime_dict_info['count_outliers']}</p>
         """
         display(HTML(text))
 
