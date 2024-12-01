@@ -64,8 +64,9 @@ class EurostatCrimeTable:
             data, id_vars=info_list, value_vars=years_list, var_name='year', value_name='value')
 
         unpivot_data['year'] = unpivot_data['year'].astype('int')
-        unpivot_data['value'] = unpivot_data['value'].replace(
-            [': ', '0 ', '0.00 ', 0], numpy.nan).astype('float')
+        unpivot_data['value'] = unpivot_data['value'].replace([': '], numpy.nan)
+        unpivot_data['value'] = unpivot_data['value'].replace(['0 ', '0.00 ', 0], 0).astype('float')
+        
 
         self._get_sorted_list(unpivot_data)
 
