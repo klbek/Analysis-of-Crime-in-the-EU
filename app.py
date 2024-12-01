@@ -69,7 +69,7 @@ app.layout = [
 
     html.Div([
         html.Div(children=[
-            html.Div(f'Summary trend table including Subcategory', style={'fontFamily': '"Open Sans", verdana, arial, sans-serif', 'fontSize': '17px', 'color': 'rgb(42, 63, 95)', 'fontWeight': 'normal', 'fontStyle': 'normal', 'fontVariant': 'normal', 'textAlign': 'center', 'paddingBottom': '10px'}),
+            html.Div(f'Summary trend table including subcategory', style={'fontFamily': '"Open Sans", verdana, arial, sans-serif', 'fontSize': '17px', 'color': 'rgb(42, 63, 95)', 'fontWeight': 'normal', 'fontStyle': 'normal', 'fontVariant': 'normal', 'textAlign': 'center', 'paddingBottom': '10px'}),
             dash_table.DataTable(id='table2', style_table={'overflowX': 'auto', 'textAlign': 'auto'},style_data_conditional=[
                 # Podmínka pro 'decreasing' a relative_trend_strength > 0.9
                 {
